@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>河马纸牌</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: #fff;
+            min-height: 100vh;
+            padding: 10px 5px;
+            overflow: hidden; /* 防止整个页面滚动 */
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+            color: #f1c40f;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-around;
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 8px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .info-item {
+            text-align: center;
+            margin: 2px 5px;
+        }
+
+        .info-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #f1c40f;
+        }
+
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 60px;
+        }
+
+        .top-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .stock-container, .foundation-container {
+            display: flex;
+            gap: 5px;
+        }
+
+        .pile {
+            width: 70px;
+            height: 100px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            font-size: 0.8rem;
+        }
+
+        .stock {
+            background-color: rgba(41, 128, 185, 0.7);
+            border: 2px dashed #3498db;
+        }
+
+        .foundation {
+            background-color: rgba(39, 174, 96, 0.3);
+            border: 2px dashed #27ae60;
+        }
+
+        .tableau-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 5px;
+            margin-top: 10px;
+            flex-wrap: nowrap;
+            overflow: visible; /* 移除滚动条 */
+            padding-bottom: 0;
+        }
+
+        /* 增加牌堆高度以容纳更多牌 */
+        .tableau-pile {
+            width: 70px;
+            min-height: 300px; /* 增加高度以容纳更多牌 */
+            border-radius: 5px;
+            position: relative;
+            background-color: rgba(0, 0, 0, 0.2);
+            border: 2px dashed rgba(255, 255, 255, 0.1);
+            flex-shrink: 0;
+        }
+
+        /* 牌堆容器 - 用于确保牌在一个格子内 */
+        .card-stack {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        /* 牌的基本样式 */
+        .card {
+            width: 70px;
+            height: 100px;
+            background-color: #fff;
+            border-radius: 5px;
+            position: absolute;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            padding: 5px 3px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            color: #000;
+            z-index: 1;
+        }
+
+        /* 牌堆中牌的层级和位置 - 保持20px间距不变 */
+        .card-stack .card:nth-child(1) { z-index: 1; top: 0; }
+        .card-stack .card:nth-child(2) { z-index: 2; top: 20px; }
+        .card-stack .card:nth-child(3) { z-index: 3; top: 40px; }
+        .card-stack .card:nth-child(4) { z-index: 4; top: 60px; }
+        .card-stack .card:nth-child(5) { z-index: 5; top: 80px; }
+        .card-stack .card:nth-child(6) { z-index: 6; top: 100px; }
+        .card-stack .card:nth-child(7) { z-index: 7; top: 120px; }
+        .card-stack .card:nth-child(8) { z-index: 8; top: 140px; }
+        .card-stack .card:nth-child(9) { z-index: 9; top: 160px; }
+        .card-stack .card:nth-child(10) { z-index: 10; top: 180px; }
+        .card-stack .card:nth-child(11) { z-index: 11; top: 200px; }
+        .card-stack .card:nth-child(12) { z-index: 12; top: 220px; }
+        .card-stack .card:nth-child(13) { z-index: 13; top: 240px; }
+        .card-stack .card:nth-child(14) { z-index: 14; top: 260px; }
+        .card-stack .card:nth-child(15) { z-index: 15; top: 280px; }
+        .card-stack .card:nth-child(16) { z-index: 16; top: 300px; }
+        .card-stack .card:nth-child(17) { z-index: 17; top: 320px; }
+        .card-stack .card:nth-child(18) { z-index: 18; top: 340px; }
+        .card-stack .card:nth-child(19) { z-index: 19; top: 360px; }
+        .card-stack .card:nth-child(20) { z-index: 20; top: 380px; }
+        .card-stack .card:nth-child(21) { z-index: 21; top: 400px; }
+        .card-stack .card:nth-child(22) { z-index: 22; top: 420px; }
+        .card-stack .card:nth-child(23) { z-index: 23; top: 440px; }
+        .card-stack .card:nth-child(24) { z-index: 24; top: 460px; }
+        .card-stack .card:nth-child(25) { z-index: 25; top: 480px; }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 牌面内容 - 只保留上方牌面，移除下方牌面 */
+        .card-top {
+            font-size: 1rem;
+            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            line-height: 1.1;
+            margin-bottom: 2px;
+        }
+
+        .card-center {
+            font-size: 1.6rem;
+            text-align: center;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 2px;
+        }
+
+        .card.back {
+            background: linear-gradient(45deg, #2c3e50, #34495e);
+            color: #fff;
+        }
+
+        .card.back .card-top,
+        .card.back .card-center {
+            display: none;
+        }
+
+        .card.selected {
+            box-shadow: 0 0 0 2px #f1c40f;
+        }
+
+        /* 控制面板 - 固定在底部，不会被牌遮挡 */
+        .control-panel {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(0, 0, 0, 0.9);
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        button {
+            padding: 6px 12px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            min-width: 80px;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        #dealBtn {
+            background-color: #e74c3c;
+        }
+
+        #dealBtn:hover {
+            background-color: #c0392b;
+        }
+
+        #restartBtn {
+            background-color: #f1c40f;
+            color: #2c3e50;
+        }
+
+        #restartBtn:hover {
+            background-color: #f39c12;
+        }
+
+        .instructions {
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            margin-bottom: 80px;
+            font-size: 0.8rem;
+        }
+
+        .instructions h3 {
+            color: #f1c40f;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .instructions ul {
+            padding-left: 15px;
+        }
+
+        .instructions li {
+            margin-bottom: 5px;
+            line-height: 1.3;
+        }
+
+        .game-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.95);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            z-index: 2000;
+            display: none;
+            box-shadow: 0 0 20px rgba(241, 196, 15, 0.5);
+            width: 80%;
+            max-width: 400px;
+        }
+
+        .game-message h2 {
+            font-size: 1.8rem;
+            color: #f1c40f;
+            margin-bottom: 10px;
+        }
+
+        .game-message p {
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+
+        .hint-highlight {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(241, 196, 15, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(241, 196, 15, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(241, 196, 15, 0); }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .pile, .card {
+                width: 60px;
+                height: 85px;
+            }
+
+            .tableau-container {
+                gap: 3px;
+            }
+
+            .tableau-pile {
+                width: 60px;
+                min-height: 250px; /* 移动端也增加高度 */
+            }
+
+            .card-center {
+                font-size: 1.3rem;
+            }
+
+            .card-top {
+                font-size: 0.9rem;
+            }
+
+            .control-panel {
+                padding: 8px;
+                gap: 5px;
+            }
+
+            button {
+                padding: 5px 8px;
+                min-width: 70px;
+                font-size: 0.7rem;
+            }
+
+            .info-value {
+                font-size: 1.2rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .top-section {
+                flex-direction: column;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .control-panel {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            button {
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>♠ 河马纸牌 ♠</h1>
+        <p>杰哥原创</p>
+    </header>
+
+    <div class="game-info">
+        <div class="info-item">
+            <div>剩余发牌</div>
+            <div class="info-value" id="stockCount">3</div>
+        </div>
+        <div class="info-item">
+            <div>已完成的序列</div>
+            <div class="info-value" id="completeCount">0</div>
+        </div>
+        <div class="info-item">
+            <div>移动次数</div>
+            <div class="info-value" id="moveCount">0</div>
+        </div>
+    </div>
+
+    <div class="game-area">
+        <div class="top-section">
+            <div class="stock-container">
+                <div class="pile stock" id="stock">
+                    <span>发牌堆</span>
+                </div>
+            </div>
+
+            <div class="foundation-container">
+                <div class="pile foundation card-slot" id="foundation1"></div>
+                <div class="pile foundation card-slot" id="foundation2"></div>
+                <div class="pile foundation card-slot" id="foundation3"></div>
+                <div class="pile foundation card-slot" id="foundation4"></div>
+            </div>
+        </div>
+
+        <div class="tableau-container" id="tableau">
+        </div>
+    </div>
+
+    <div class="instructions">
+        <h3>游戏规则：</h3>
+        <ul>
+            <li>目标：将所有黑桃牌从K到A按顺序排列到右下角的四个完成堆中</li>
+            <li>可以将牌移到比它大1点的牌上（例如：5可以移到6上）</li>
+            <li>可以移动一叠按顺序排列的牌（例如：9-8-7）</li>
+            <li>点击发牌堆可以发新牌到每一列</li>
+            <li>当一列的所有牌都被移走时，可以将任何一张牌移到该空列</li>
+            <li>完成4个从K到A的序列即可赢得游戏</li>
+        </ul>
+    </div>
+</div>
+
+<div class="control-panel">
+    <button id="dealBtn">发牌 (3次剩余)</button>
+    <button id="undoBtn">撤销</button>
+    <button id="hintBtn">提示</button>
+    <button id="restartBtn">重新开始</button>
+</div>
+
+<div class="game-message" id="winMessage">
+    <h2>恭喜！你赢了！</h2>
+    <p>你成功完成了所有4个序列！</p>
+    <button id="playAgainBtn">再玩一次</button>
+</div>
+
+<script>
+    // 游戏状态
+    const gameState = {
+        stock: [], // 发牌堆
+        tableau: [[], [], [], [], [], [], []], // 7个 tableau 堆
+        foundations: [[], [], [], []], // 4个完成堆
+        selectedCard: null, // 当前选中的牌
+        selectedPile: null, // 当前选中的牌堆
+        moveCount: 0, // 移动次数
+        stockCount: 3, // 剩余发牌次数
+        completeCount: 0, // 完成的序列数
+        moveHistory: [] // 移动历史，用于撤销
+    };
+
+    // 牌的数值到显示值的映射
+    const valueToDisplay = {
+        1: 'A', 2: '2', 3: '3', 4: '4', 5: '5',
+        6: '6', 7: '7', 8: '8', 9: '9', 10: '10',
+        11: 'J', 12: 'Q', 13: 'K'
+    };
+
+    // 初始化游戏
+    function initGame() {
+        // 创建一副包含52张黑桃牌的牌堆（4套A到K）
+        const deck = [];
+        for (let i = 0; i < 4; i++) {
+            for (let rank = 1; rank <= 13; rank++) {
+                deck.push({
+                    value: valueToDisplay[rank],
+                    rank,
+                    suit: '♠',
+                    id: `${rank}-${i}-${Date.now()}-${Math.random()}`
+                });
+            }
+        }
+
+        // 洗牌
+        shuffleArray(deck);
+
+        // 初始化 tableau 堆
+        for (let i = 0; i < 7; i++) {
+            gameState.tableau[i] = [];
+            // 前4堆有5张牌，后3堆有4张牌
+            const cardsInPile = i < 4 ? 5 : 4;
+            for (let j = 0; j < cardsInPile; j++) {
+                const card = deck.pop();
+                // 只有最上面的牌是正面
+                card.faceUp = (j === cardsInPile - 1);
+                gameState.tableau[i].push(card);
+            }
+        }
+
+        // 剩余的牌放入发牌堆
+        gameState.stock = deck;
+        gameState.stock.forEach(card => card.faceUp = false);
+
+        // 重置游戏状态 - 确保完成堆被完全清空
+        gameState.selectedCard = null;
+        gameState.selectedPile = null;
+        gameState.moveCount = 0;
+        gameState.stockCount = 3;
+        gameState.completeCount = 0;
+        gameState.moveHistory = [];
+
+        // 确保完成堆被完全清空
+        for (let i = 0; i < 4; i++) {
+            gameState.foundations[i] = [];
+        }
+
+        // 更新UI
+        updateUI();
+    }
+
+    // 洗牌算法
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    // 发牌
+    function dealCards() {
+        if (gameState.stockCount <= 0 || gameState.stock.length === 0) {
+            alert("没有牌可发了！");
+            return;
+        }
+
+        // 记录发牌前的状态用于撤销
+        saveMoveState();
+
+        for (let i = 0; i < 7; i++) {
+            if (gameState.stock.length > 0) {
+                const card = gameState.stock.pop();
+                card.faceUp = true;
+                gameState.tableau[i].push(card);
+
+                const pile = gameState.tableau[i];
+                if (pile.length > 1) {
+                    const cardBelow = pile[pile.length - 2];
+                    if (!cardBelow.faceUp) {
+                        cardBelow.faceUp = true;
+                    }
+                }
+            }
+        }
+
+        gameState.stockCount--;
+        gameState.moveCount++;
+        updateUI();
+    }
+
+    // 选择一张牌
+    function selectCard(card, pileIndex, cardIndex) {
+        // 如果点击的是背面朝上的牌，将其翻开
+        if (!card.faceUp) {
+            // 记录翻牌前的状态用于撤销
+            saveMoveState();
+
+            card.faceUp = true;
+            gameState.moveCount++;
+            updateUI();
+            return;
+        }
+
+        // 如果已经选中了一张牌
+        if (gameState.selectedCard) {
+            // 如果是同一张牌，取消选择
+            if (gameState.selectedCard === card && gameState.selectedPile === pileIndex) {
+                gameState.selectedCard = null;
+                gameState.selectedPile = null;
+            }
+            // 否则尝试移动牌
+            else {
+                moveCard(pileIndex, cardIndex);
+            }
+        }
+        // 如果没有选中的牌，选中这张牌
+        else {
+            gameState.selectedCard = card;
+            gameState.selectedPile = pileIndex;
+        }
+
+        updateUI();
+    }
+
+    // 移动牌
+    function moveCard(toPileIndex, toCardIndex = null) {
+        const fromPileIndex = gameState.selectedPile;
+        const fromPile = gameState.tableau[fromPileIndex];
+        const toPile = gameState.tableau[toPileIndex];
+
+        // 找到选中的牌在堆中的位置
+        const selectedCardIndex = fromPile.findIndex(card => card.id === gameState.selectedCard.id);
+        if (selectedCardIndex === -1) return;
+
+        // 获取要移动的牌（可能是一张或多张）
+        const cardsToMove = fromPile.slice(selectedCardIndex);
+
+        // 检查是否按顺序排列
+        if (!isValidSequence(cardsToMove)) {
+            alert("只能移动按顺序排列的牌！");
+            return;
+        }
+
+        // 检查是否可以移动到目标堆
+        if (canMoveToPile(cardsToMove[0], toPile)) {
+            // 记录移动前的状态用于撤销
+            saveMoveState();
+
+            // 从原堆中移除牌
+            gameState.tableau[fromPileIndex] = fromPile.slice(0, selectedCardIndex);
+
+            // 将牌添加到目标堆
+            gameState.tableau[toPileIndex] = [...toPile, ...cardsToMove];
+
+            // 如果原堆还有牌，翻开最上面一张
+            if (gameState.tableau[fromPileIndex].length > 0) {
+                const topCard = gameState.tableau[fromPileIndex][gameState.tableau[fromPileIndex].length - 1];
+                if (!topCard.faceUp) {
+                    topCard.faceUp = true;
+                }
+            }
+
+            // 增加移动计数
+            gameState.moveCount++;
+
+            // 检查是否有完成的序列可以移到完成堆
+            checkForCompletedSequences();
+
+            // 重置选择
+            gameState.selectedCard = null;
+            gameState.selectedPile = null;
+
+            // 检查游戏是否获胜
+            checkWinCondition();
+        } else {
+            alert("无法移动到此位置！");
+        }
+
+        updateUI();
+    }
+
+    // 检查牌是否可以移动到完成堆
+    function moveToFoundation(card, foundationIndex) {
+        const foundation = gameState.foundations[foundationIndex];
+
+        // 如果完成堆是空的，只能放A
+        if (foundation.length === 0) {
+            return card.rank === 1;
+        }
+
+        // 否则，只能放比完成堆最上面一张牌大1点的牌
+        const topCard = foundation[foundation.length - 1];
+        return card.rank === topCard.rank + 1;
+    }
+
+    // 检查是否可以移动到 tableau 堆
+    function canMoveToPile(card, pile) {
+        // 如果堆是空的，可以放任何牌
+        if (pile.length === 0) {
+            return true;
+        }
+
+        // 否则，只能放比堆顶牌小1点的牌
+        const topCard = pile[pile.length - 1];
+        return card.rank === topCard.rank - 1;
+    }
+
+    // 检查牌序列是否有效
+    function isValidSequence(cards) {
+        for (let i = 0; i < cards.length - 1; i++) {
+            if (cards[i].rank !== cards[i + 1].rank + 1) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // 检查是否有完成的序列
+    function checkForCompletedSequences() {
+        for (let pileIndex = 0; pileIndex < gameState.tableau.length; pileIndex++) {
+            const pile = gameState.tableau[pileIndex];
+
+            // 如果堆中的牌至少有13张
+            if (pile.length >= 13) {
+                // 检查最后13张牌是否是从K到A
+                const last13 = pile.slice(-13);
+                if (isValidSequence(last13) && last13[0].rank === 13 && last13[12].rank === 1) {
+                    // 找到空的完成堆
+                    let emptyFoundationIndex = -1;
+                    for (let i = 0; i < gameState.foundations.length; i++) {
+                        if (gameState.foundations[i].length === 0) {
+                            emptyFoundationIndex = i;
+                            break;
+                        }
+                    }
+
+                    // 如果有空的完成堆，移动序列
+                    if (emptyFoundationIndex !== -1) {
+                        // 从 tableau 堆中移除这13张牌
+                        gameState.tableau[pileIndex] = pile.slice(0, pile.length - 13);
+
+                        // 添加到完成堆
+                        gameState.foundations[emptyFoundationIndex] = last13;
+
+                        // 如果 tableau 堆还有牌，翻开最上面一张
+                        if (gameState.tableau[pileIndex].length > 0) {
+                            const topCard = gameState.tableau[pileIndex][gameState.tableau[pileIndex].length - 1];
+                            if (!topCard.faceUp) {
+                                topCard.faceUp = true;
+                            }
+                        }
+
+                        // 更新完成计数
+                        gameState.completeCount++;
+                    }
+                }
+            }
+        }
+    }
+
+    // 检查是否获胜
+    function checkWinCondition() {
+        // 如果所有8个序列都完成了
+        if (gameState.completeCount === 4) {
+            setTimeout(() => {
+                document.getElementById('winMessage').style.display = 'block';
+            }, 500);
+        }
+    }
+
+    // 保存移动状态用于撤销
+    function saveMoveState() {
+        // 保存当前状态
+        const state = {
+            stock: JSON.parse(JSON.stringify(gameState.stock)),
+            tableau: JSON.parse(JSON.stringify(gameState.tableau)),
+            foundations: JSON.parse(JSON.stringify(gameState.foundations)),
+            moveCount: gameState.moveCount,
+            stockCount: gameState.stockCount,
+            completeCount: gameState.completeCount
+        };
+
+        // 保存牌的正反面状态
+        for (let i = 0; i < state.tableau.length; i++) {
+            for (let j = 0; j < state.tableau[i].length; j++) {
+                state.tableau[i][j].faceUp = gameState.tableau[i][j].faceUp;
+            }
+        }
+
+        gameState.moveHistory.push(state);
+
+        // 限制历史记录长度
+        if (gameState.moveHistory.length > 20) {
+            gameState.moveHistory.shift();
+        }
+    }
+
+    // 撤销上一步
+    function undoMove() {
+        if (gameState.moveHistory.length === 0) return;
+
+        const previousState = gameState.moveHistory.pop();
+
+        gameState.stock = previousState.stock;
+        gameState.tableau = previousState.tableau;
+        gameState.foundations = previousState.foundations;
+        gameState.moveCount = previousState.moveCount;
+        gameState.stockCount = previousState.stockCount;
+        gameState.completeCount = previousState.completeCount;
+        gameState.selectedCard = null;
+        gameState.selectedPile = null;
+
+        updateUI();
+    }
+
+    // 显示提示
+    function showHint() {
+        // 移除之前的高亮
+        document.querySelectorAll('.hint-highlight').forEach(card => {
+            card.classList.remove('hint-highlight');
+        });
+
+        // 查找可以移动的牌
+        for (let fromPileIndex = 0; fromPileIndex < gameState.tableau.length; fromPileIndex++) {
+            const fromPile = gameState.tableau[fromPileIndex];
+            if (fromPile.length === 0) continue;
+
+            // 查找正面朝上的牌
+            for (let cardIndex = 0; cardIndex < fromPile.length; cardIndex++) {
+                const card = fromPile[cardIndex];
+                if (!card.faceUp) continue;
+
+                // 检查是否可以移动到其他 tableau 堆
+                for (let toPileIndex = 0; toPileIndex < gameState.tableau.length; toPileIndex++) {
+                    if (fromPileIndex === toPileIndex) continue;
+
+                    const toPile = gameState.tableau[toPileIndex];
+                    const cardsToMove = fromPile.slice(cardIndex);
+
+                    if (isValidSequence(cardsToMove) && canMoveToPile(cardsToMove[0], toPile)) {
+                        // 高亮显示可移动的牌
+                        highlightCard(fromPileIndex, cardIndex);
+                        return;
+                    }
+                }
+            }
+        }
+
+        alert("没有找到可移动的牌！");
+    }
+
+    // 高亮显示一张牌
+    function highlightCard(pileIndex, cardIndex) {
+        const cards = document.querySelectorAll('.card');
+        for (const card of cards) {
+            if (card.dataset.pileIndex == pileIndex && card.dataset.cardIndex == cardIndex) {
+                card.classList.add('hint-highlight');
+                break;
+            }
+        }
+    }
+
+    // 更新UI
+    function updateUI() {
+        // 更新游戏信息
+        document.getElementById('stockCount').textContent = gameState.stockCount;
+        document.getElementById('completeCount').textContent = gameState.completeCount;
+        document.getElementById('moveCount').textContent = gameState.moveCount;
+
+        // 更新发牌堆按钮
+        document.getElementById('dealBtn').textContent = `发牌 (${gameState.stockCount}次剩余)`;
+
+        // 更新 tableau
+        const tableauElement = document.getElementById('tableau');
+        tableauElement.innerHTML = '';
+
+        for (let i = 0; i < 7; i++) {
+            const pileElement = document.createElement('div');
+            pileElement.className = 'tableau-pile card-slot';
+            pileElement.dataset.pileIndex = i;
+
+            // 创建牌堆容器
+            const cardStackElement = document.createElement('div');
+            cardStackElement.className = 'card-stack';
+
+            // 添加牌
+            const pile = gameState.tableau[i];
+            for (let j = 0; j < pile.length; j++) {
+                const card = pile[j];
+                const cardElement = createCardElement(card, i, j);
+                cardStackElement.appendChild(cardElement);
+            }
+
+            pileElement.appendChild(cardStackElement);
+            tableauElement.appendChild(pileElement);
+
+            // 添加拖放事件
+            pileElement.addEventListener('dragover', allowDrop);
+            pileElement.addEventListener('drop', (e) => handleDrop(e, i));
+
+            // 为移动端添加点击空位放置牌的功能
+            // 只在牌堆为空时添加点击事件
+            if (pile.length === 0) {
+                pileElement.addEventListener('click', (e) => {
+                    // 防止事件冒泡
+                    e.stopPropagation();
+                    // 如果有选中的牌，尝试移动到这个空位
+                    if (gameState.selectedCard && gameState.selectedPile !== i) {
+                        moveCard(i);
+                    }
+                });
+            }
+        }
+
+        // 更新完成堆
+        for (let i = 0; i < 4; i++) {
+            const foundationElement = document.getElementById(`foundation${i + 1}`);
+            foundationElement.innerHTML = '';
+
+            const foundation = gameState.foundations[i];
+            if (foundation.length > 0) {
+                const topCard = foundation[foundation.length - 1];
+                const cardElement = createCardElement(topCard, -1, -1, true);
+                foundationElement.appendChild(cardElement);
+            }
+
+            // 添加拖放事件
+            foundationElement.addEventListener('dragover', allowDrop);
+            foundationElement.addEventListener('drop', (e) => handleDrop(e, -1));
+        }
+
+        // 更新发牌堆
+        const stockElement = document.getElementById('stock');
+        stockElement.innerHTML = gameState.stock.length > 0 ?
+            `<div class="card back" style="position:absolute; top:3px; left:3px; z-index: 1;"></div>
+                 <span style="position:relative; z-index:2;">发牌堆</span>` :
+            '<span>发牌堆</span>';
+
+        // 为发牌堆添加点击事件
+        stockElement.onclick = dealCards;
+    }
+
+    // 创建牌元素 - 只显示上方牌面
+    function createCardElement(card, pileIndex, cardIndex, isFoundation = false) {
+        const cardElement = document.createElement('div');
+        cardElement.className = `card ${card.faceUp ? '' : 'back'}`;
+        cardElement.dataset.cardId = card.id;
+
+        if (card.faceUp) {
+            // 只显示上方牌面，不显示下方牌面
+            cardElement.innerHTML = `
+                    <div class="card-top">${card.value}<br>${card.suit}</div>
+                    <div class="card-center">${card.suit}</div>
+                `;
+        }
+
+        // 设置数据属性
+        cardElement.dataset.pileIndex = pileIndex;
+        cardElement.dataset.cardIndex = cardIndex;
+        cardElement.dataset.rank = card.rank;
+
+        // 添加选中状态
+        if (gameState.selectedCard && gameState.selectedCard.id === card.id) {
+            cardElement.classList.add('selected');
+        }
+
+        // 添加点击事件
+        cardElement.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (!isFoundation) {
+                selectCard(card, pileIndex, cardIndex);
+            }
+        });
+
+        // 添加拖放功能
+        cardElement.draggable = true;
+        cardElement.addEventListener('dragstart', (e) => {
+            if (card.faceUp) {
+                gameState.selectedCard = card;
+                gameState.selectedPile = pileIndex;
+                e.dataTransfer.setData('text/plain', card.id);
+            }
+        });
+
+        return cardElement;
+    }
+
+    // 允许放置拖动的元素
+    function allowDrop(event) {
+        event.preventDefault();
+    }
+
+    // 处理放置事件
+    function handleDrop(event, pileIndex) {
+        event.preventDefault();
+        if (gameState.selectedCard) {
+            if (pileIndex >= 0) {
+                moveCard(pileIndex);
+            }
+        }
+    }
+
+    // 事件监听
+    document.addEventListener('DOMContentLoaded', () => {
+        // 初始化游戏
+        initGame();
+
+        // 发牌按钮
+        document.getElementById('dealBtn').addEventListener('click', dealCards);
+
+        // 撤销按钮
+        document.getElementById('undoBtn').addEventListener('click', undoMove);
+
+        // 提示按钮
+        document.getElementById('hintBtn').addEventListener('click', showHint);
+
+        // 重新开始按钮
+        document.getElementById('restartBtn').addEventListener('click', () => {
+            if (confirm("确定要重新开始游戏吗？")) {
+                initGame();
+            }
+        });
+
+        // 再玩一次按钮
+        document.getElementById('playAgainBtn').addEventListener('click', () => {
+            document.getElementById('winMessage').style.display = 'none';
+            initGame();
+        });
+
+        // 点击游戏区域外部取消选中的牌
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.card') && !e.target.closest('.pile')) {
+                gameState.selectedCard = null;
+                gameState.selectedPile = null;
+                updateUI();
+            }
+        });
+    });
+</script>
+</body>
+</html>
